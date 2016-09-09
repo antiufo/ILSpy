@@ -137,6 +137,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReferenceResolvingException.cs" />
     <Compile Include="TextOutputWriter.cs" />
+    <Compile Include="TypeScript\App.cs" />
+    <Compile Include="TypeScript\FunctionType.cs" />
+    <Compile Include="TypeScript\TypeScriptOutputVisitor.cs" />
     <None Include="Properties\AssemblyInfo.template.cs" />
   </ItemGroup>
   <ItemGroup>
