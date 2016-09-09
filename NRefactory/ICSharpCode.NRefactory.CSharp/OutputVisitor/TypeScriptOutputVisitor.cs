@@ -343,6 +343,10 @@ namespace Netjs
 			lastWritten = LastWritten.KeywordOrIdentifier;
 		}*/
 
+        void WriteIdentifierCamelCase(string identifier)
+        {
+            WriteIdentifier(char.ToLowerInvariant(identifier[0])+identifier.Substring(1));
+        }
         void WriteIdentifier(string identifier, Role<Identifier> identifierRole = null)
         {
             WriteSpecialsUpToRole(identifierRole ?? Roles.Identifier);
@@ -452,6 +456,7 @@ namespace Netjs
         void NewLine()
         {
             formatter.NewLine();
+            isAtStartOfLine = true;
             lastWritten = LastWritten.Whitespace;
         }
 
@@ -1065,7 +1070,7 @@ namespace Netjs
             StartNode(memberReferenceExpression);
             memberReferenceExpression.Target.AcceptVisitor(this);
             WriteToken(Roles.Dot);
-            WriteIdentifier(memberReferenceExpression.MemberName);
+            WriteIdentifierCamelCase(memberReferenceExpression.MemberName);
             WriteTypeArguments(memberReferenceExpression.TypeArguments);
             EndNode(memberReferenceExpression);
         }
@@ -1141,7 +1146,7 @@ namespace Netjs
             StartNode(pointerReferenceExpression);
             pointerReferenceExpression.Target.AcceptVisitor(this);
             WriteToken(PointerReferenceExpression.ArrowRole);
-            WriteIdentifier(pointerReferenceExpression.MemberName);
+            WriteIdentifierCamelCase(pointerReferenceExpression.MemberName);
             WriteTypeArguments(pointerReferenceExpression.TypeArguments);
             EndNode(pointerReferenceExpression);
         }
@@ -2304,12 +2309,12 @@ namespace Netjs
                 WriteModifiers(variableDeclarationStatement.GetChildrenByRole(VariableDeclarationStatement.ModifierRole));
                 WriteKeyword("var");
                 v.NameToken.AcceptVisitor(this);
-                if (!variableDeclarationStatement.Type.IsNull)
-                {
-                    WriteToken(Roles.Colon);
-                    Space();
-                    variableDeclarationStatement.Type.AcceptVisitor(this);
-                }
+                //if (!variableDeclarationStatement.Type.IsNull)
+                //{
+                //    WriteToken(Roles.Colon);
+                //    Space();
+                //    variableDeclarationStatement.Type.AcceptVisitor(this);
+                //}
                 if (!v.Initializer.IsNull)
                 {
                     Space(policy.SpaceAroundAssignment);
@@ -2390,7 +2395,7 @@ namespace Netjs
             WriteAttributes(constructorDeclaration.Attributes);
             WriteModifiers(constructorDeclaration.ModifierTokens);
             StartNode(constructorDeclaration.NameToken);
-            WriteIdentifier(constructorDeclaration.Name);
+            WriteIdentifier("constructor");
             EndNode(constructorDeclaration.NameToken);
             Space(policy.SpaceBeforeConstructorDeclarationParentheses);
             WriteCommaSeparatedListInParenthesis(constructorDeclaration.Parameters, policy.SpaceWithinMethodDeclarationParentheses);
@@ -2573,7 +2578,11 @@ namespace Netjs
             WriteAttributes(methodDeclaration.Attributes);
             WriteModifiers(methodDeclaration.ModifierTokens);
             WritePrivateImplementationType(methodDeclaration.PrivateImplementationType);
-            methodDeclaration.NameToken.AcceptVisitor(this);
+
+            StartNode(methodDeclaration.NameToken);
+            WriteIdentifierCamelCase(methodDeclaration.Name);
+            EndNode(methodDeclaration.NameToken);
+
             WriteTypeParameters(methodDeclaration.TypeParameters,
                 tp =>
                 {
@@ -2859,6 +2868,7 @@ namespace Netjs
 
         public void VisitConstraint(Constraint constraint)
         {
+#if false
             StartNode(constraint);
             Space();
             WriteKeyword(Roles.WhereKeyword);
@@ -2868,6 +2878,7 @@ namespace Netjs
             Space();
             WriteCommaSeparatedList(constraint.BaseTypes);
             EndNode(constraint);
+#endif
         }
 
         public void VisitCSharpTokenNode(CSharpTokenNode cSharpTokenNode)
@@ -2892,9 +2903,9 @@ namespace Netjs
             EndNode(identifier);
         }
 
-        #endregion
+#endregion
 
-        #region Pattern Nodes
+#region Pattern Nodes
         public void VisitPatternPlaceholder(AstNode placeholder, Pattern pattern)
         {
             StartNode(placeholder);
@@ -3019,9 +3030,9 @@ namespace Netjs
                 WritePrimitiveValue(childNode);
             }
         }
-        #endregion
+#endregion
 
-        #region Documentation Reference
+#region Documentation Reference
         public void VisitDocumentationReference(DocumentationReference documentationReference)
         {
             StartNode(documentationReference);
@@ -3063,7 +3074,7 @@ namespace Netjs
                     }
                     break;
                 default:
-                    WriteIdentifier(documentationReference.MemberName);
+                    WriteIdentifierCamelCase(documentationReference.MemberName);
                     break;
             }
             WriteTypeArguments(documentationReference.TypeArguments);
@@ -3090,7 +3101,7 @@ namespace Netjs
         {
             throw new NotImplementedException();
         }
-        #endregion
+#endregion
 
 
         public void CloseBraceInternal(BraceStyle style)
