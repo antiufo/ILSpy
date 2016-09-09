@@ -315,8 +315,9 @@ namespace ICSharpCode.Decompiler
 		#endregion
 		
 		CSharpFormattingOptions csharpFormattingOptions;
-		
-		public CSharpFormattingOptions CSharpFormattingOptions {
+        public string Language;
+
+        public CSharpFormattingOptions CSharpFormattingOptions {
 			get {
 				if (csharpFormattingOptions == null) {
 					csharpFormattingOptions = FormattingOptionsFactory.CreateAllman();

@@ -37,10 +37,11 @@ using Mono.Cecil.Cil;
 
 namespace ICSharpCode.Decompiler.Ast
 {
-	using Ast = ICSharpCode.NRefactory.CSharp;
-	using VarianceModifier = ICSharpCode.NRefactory.TypeSystem.VarianceModifier;
-	
-	[Flags]
+    using Netjs;
+    using Ast = ICSharpCode.NRefactory.CSharp;
+    using VarianceModifier = ICSharpCode.NRefactory.TypeSystem.VarianceModifier;
+
+    [Flags]
 	public enum ConvertTypeOptions
 	{
 		None = 0,
@@ -162,7 +163,11 @@ namespace ICSharpCode.Decompiler.Ast
 			syntaxTree.AcceptVisitor(new InsertParenthesesVisitor { InsertParenthesesForReadability = true });
 			var outputFormatter = new TextTokenWriter(output, context) { FoldBraces = context.Settings.FoldBraces };
 			var formattingPolicy = context.Settings.CSharpFormattingOptions;
-			syntaxTree.AcceptVisitor(new CSharpOutputVisitor(outputFormatter, formattingPolicy));
+
+            if (context.Settings.Language == "TypeScript") syntaxTree.AcceptVisitor(new TsOutputVisitor(outputFormatter, formattingPolicy));
+            else syntaxTree.AcceptVisitor(new CSharpOutputVisitor(outputFormatter, formattingPolicy));
+            
+            
 		}
 		
 		public void AddAssembly(AssemblyDefinition assemblyDefinition, bool onlyAssemblyLevel = false)

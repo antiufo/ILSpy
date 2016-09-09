@@ -28,11 +28,13 @@ namespace ICSharpCode.ILSpy
 	/// </summary>
 	public class DecompilationOptions
 	{
-		/// <summary>
-		/// Gets whether a full decompilation (all members recursively) is desired.
-		/// If this option is false, language bindings are allowed to show the only headers of the decompiled element's children.
-		/// </summary>
-		public bool FullDecompilation { get; set; }
+
+
+        /// <summary>
+        /// Gets whether a full decompilation (all members recursively) is desired.
+        /// If this option is false, language bindings are allowed to show the only headers of the decompiled element's children.
+        /// </summary>
+        public bool FullDecompilation { get; set; }
 		
 		/// <summary>
 		/// Gets/Sets the directory into which the project is saved.

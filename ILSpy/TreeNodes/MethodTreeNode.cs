@@ -130,6 +130,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
 		{
+            options.DecompilerSettings.Language = language.Name;
 			language.DecompileMethod(method, output, options);
 		}
 

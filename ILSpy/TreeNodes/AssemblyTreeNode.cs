@@ -258,6 +258,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 					throw;
 				}
 			}
+            options.DecompilerSettings.Language = language.Name;
 			language.DecompileAssembly(assembly, output, options);
 		}
 

@@ -41,10 +41,10 @@ namespace ICSharpCode.ILSpy
 			List<Language> languages = new List<Language>();
 			languages.AddRange(composition.GetExportedValues<Language>());
 			languages.Add(new ILLanguage(true));
-			#if DEBUG
+#if DEBUG
 			languages.AddRange(ILAstLanguage.GetDebugLanguages());
 			languages.AddRange(CSharpLanguage.GetDebugLanguages());
-			#endif
+#endif
 			allLanguages = languages.AsReadOnly();
 		}
 

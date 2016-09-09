@@ -76,6 +76,7 @@
     <Compile Include="Ast\Transforms\CombineQueryExpressions.cs" />
     <Compile Include="Ast\Transforms\ContextTrackingVisitor.cs" />
     <Compile Include="Ast\Transforms\ConvertConstructorCallIntoInitializer.cs" />
+    <Compile Include="Ast\Transforms\CsToTs.cs" />
     <Compile Include="Ast\Transforms\CustomPatterns.cs" />
     <Compile Include="Ast\Transforms\DecimalConstantTransform.cs" />
     <Compile Include="Ast\Transforms\DeclareVariables.cs" />
@@ -139,11 +140,11 @@
     <None Include="Properties\AssemblyInfo.template.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj"  Condition=" '$(BuildNuGetPackage)' != 'True' ">
+    <ProjectReference Include="..\Mono.Cecil\Mono.Cecil.csproj" Condition=" '$(BuildNuGetPackage)' != 'True' ">
       <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
       <Name>Mono.Cecil</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj"  Condition=" '$(BuildNuGetPackage)' != 'True' ">
+    <ProjectReference Include="..\NRefactory\ICSharpCode.NRefactory.CSharp\ICSharpCode.NRefactory.CSharp.csproj" Condition=" '$(BuildNuGetPackage)' != 'True' ">
       <Project>{53DCA265-3C3C-42F9-B647-F72BA678122B}</Project>
       <Name>ICSharpCode.NRefactory.CSharp</Name>
     </ProjectReference>

@@ -206,6 +206,8 @@
     <Compile Include="CSharpProjectContent.cs" />
     <Compile Include="Formatter\CSharpFormattingOptions.cs" />
     <Compile Include="Formatter\Indent.cs" />
+    <Compile Include="FunctionType.cs" />
+    <Compile Include="OutputVisitor\App.cs" />
     <Compile Include="OutputVisitor\CodeDomConvertVisitor.cs" />
     <Compile Include="OutputVisitor\CSharpAmbience.cs" />
     <Compile Include="OutputVisitor\InsertMissingTokensDecorator.cs" />
@@ -215,6 +217,7 @@
     <Compile Include="OutputVisitor\InsertSpecialsDecorator.cs" />
     <Compile Include="OutputVisitor\ITokenWriter.cs" />
     <Compile Include="OutputVisitor\TextWriterOutputFormatter.cs" />
+    <Compile Include="OutputVisitor\TypeScriptOutputVisitor.cs" />
     <Compile Include="Parser\CompilerSettings.cs" />
     <Compile Include="Parser\CSharpParser.cs" />
     <Compile Include="Parser\mcs\anonymous.cs" />
@@ -391,6 +394,10 @@
     <Compile Include="Util\CloneableStack.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Mono.Cecil\Mono.Cecil.csproj">
+      <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ICSharpCode.NRefactory\ICSharpCode.NRefactory.csproj">
       <Project>{3B2A5653-EC97-4001-BB9B-D90F1AF2C371}</Project>
       <Name>ICSharpCode.NRefactory</Name>
@@ -413,8 +420,5 @@
   <ItemGroup>
     <None Include="Parser\mcs\cs-parser.jay" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PatternMatching\" />
-    <Folder Include="IndentEngine\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>
