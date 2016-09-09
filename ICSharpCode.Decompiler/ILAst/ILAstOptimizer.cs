@@ -235,9 +235,10 @@ namespace ICSharpCode.Decompiler.ILAst
 			if (context.Settings.AnonymousMethods) {
 				foreach(ILBlock block in method.GetSelfAndChildrenRecursive<ILBlock>()) {
 					for (int i = 0; i < block.Body.Count; i++) {
-						// TODO: Move before loops
-						CachedDelegateInitializationWithField(block, ref i);
-						CachedDelegateInitializationWithLocal(block, ref i);
+                        // TODO: Move before loops
+                        CachedDelegateInitializationWithField(block, ref i);
+                        CachedDelegateInitializationWithField2(block, ref i);
+                        CachedDelegateInitializationWithLocal(block, ref i);
 					}
 				}
 			}
