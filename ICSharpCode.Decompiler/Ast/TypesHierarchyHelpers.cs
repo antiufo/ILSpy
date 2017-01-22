@@ -369,11 +369,19 @@ namespace ICSharpCode.Decompiler.Ast
 			while (type.Item.BaseType != null) {
 				var baseType = type.Item.BaseType;
 				var genericBaseType = baseType as GenericInstanceType;
-				if (genericBaseType != null) {
-					type = new GenericContext<TypeDefinition>(genericBaseType.ResolveOrThrow(),
+				if (genericBaseType != null)
+				{
+					var b = genericBaseType.Resolve();
+					if (b == null) break;
+					type = new GenericContext<TypeDefinition>(b,
 						genericBaseType.GenericArguments.Select(t => type.ResolveWithContext(t)));
-				} else
-					type = new GenericContext<TypeDefinition>(baseType.ResolveOrThrow());
+				}
+				else
+				{
+					var b = baseType.Resolve();
+					if (b == null) break;
+					type = new GenericContext<TypeDefinition>(b);
+				}
 				yield return type;
 			}
 		}

@@ -74,7 +74,7 @@ namespace ICSharpCode.ILSpy.TreeNodes.Analyzer
 			TypeReference type = analyzedMethod.DeclaringType.BaseType;
 			while (type != null) {
 				possibleTypes.Add(type);
-				type = type.Resolve().BaseType;
+				type = type.Resolve()?.BaseType;
 			}
 		}
 
