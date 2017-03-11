@@ -202,7 +202,20 @@ namespace ICSharpCode.Decompiler.ILAst
 	{
 		public string Name;
 		public bool   IsGenerated;
-		public TypeReference Type;
+		private TypeReference _type;
+		public TypeReference Type
+		{
+			get { return _type; }
+			set
+			{
+				if (value == null)
+				{
+					if (OriginalParameter?.ParameterType != null || OriginalVariable?.VariableType != null)
+						return;
+				}
+				_type = value;
+			}
+		}
 		public VariableDefinition OriginalVariable;
 		public ParameterDefinition OriginalParameter;
 		
