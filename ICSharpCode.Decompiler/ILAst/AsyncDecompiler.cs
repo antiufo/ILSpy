@@ -606,8 +606,9 @@ namespace ICSharpCode.Decompiler.ILAst
 			}
 		}
 		
-		static bool Step2(List<ILNode> body, ref int pos)
+		static bool Step2(List<ILNode> body, ref int committedPos)
 		{
+			var pos = committedPos;
 			// stloc(CS$0$0001, callvirt(class System.Threading.Tasks.Task`1<bool>::GetAwaiter, awaiterExpr)
 			// brtrue(IL_7C, call(valuetype [mscorlib]System.Runtime.CompilerServices.TaskAwaiter`1<bool>::get_IsCompleted, ldloca(CS$0$0001)))
 			// await(ldloca(CS$0$0001))
@@ -615,7 +616,27 @@ namespace ICSharpCode.Decompiler.ILAst
 			// IL_7C:
 			// arg_8B_0 = call(valuetype [mscorlib]System.Runtime.CompilerServices.TaskAwaiter`1<bool>::GetResult, ldloca(CS$0$0001))
 			// initobj(valuetype [mscorlib]System.Runtime.CompilerServices.TaskAwaiter`1<bool>, ldloca(CS$0$0001))
-			
+
+			// or:
+
+			// var_5 = callvirt(Task::GetAwaiter, call(Task::WhenAll, ldloc(<allTasks>5__2)))
+			// brtrue(IL_26D, call(TaskAwaiter::get_IsCompleted, ldloca(var_5)))
+			// expr_22A = ldc.i4(1)
+			// stloc(var_0, expr_22A)
+			// stloc(<> 1__state, expr_22A)
+			// var_3 = ldloc(this)
+			// await(ldloca(var_5))
+			// ...
+
+
+
+
+
+			if (body[committedPos].ToString().Contains("GetAwaiter"))
+			{
+
+			}
+
 			ILExpression loadAwaiter;
 			ILVariable awaiterVar;
 			if (!body[pos].Match(ILCode.Await, out loadAwaiter))
@@ -656,17 +677,22 @@ namespace ICSharpCode.Decompiler.ILAst
 				// between the await and the label, there should only be the stack, awaiter and state logic
 				ILExpression expr = body[i] as ILExpression;
 				if (expr == null)
+				{
+					if (body[i] is ILLabel) continue;
 					return false;
+				}
 				switch (expr.Code) {
 					case ILCode.Stloc:
 					case ILCode.Initobj:
 					case ILCode.Stfld:
 					case ILCode.Await:
+					case ILCode.Br:
 						// e.g.
 						// stloc(CS$0$0001, ldfld(StateMachine::<>u__$awaitere, ldloc(this)))
 						// initobj(valuetype [mscorlib]System.Runtime.CompilerServices.TaskAwaiter`1<bool>, ldloca(CS$0$0002_66))
 						// stfld('<AwaitInLoopCondition>d__d'::<>u__$awaitere, ldloc(this), ldloc(CS$0$0002_66))
 						// stfld('<AwaitInLoopCondition>d__d'::<>1__state, ldloc(this), ldc.i4(-1))
+						// br(IL_9B)
 						break;
 					default:
 						return false;
@@ -691,6 +717,7 @@ namespace ICSharpCode.Decompiler.ILAst
 			if (isResultAssignment) {
 				Debug.Assert(body[pos] == resultAssignment);
 				resultAssignment.Arguments[0] = new ILExpression(ILCode.Await, null, awaitedExpr);
+
 			} else {
 				body[pos] = new ILExpression(ILCode.Await, null, awaitedExpr);
 			}
@@ -699,7 +726,20 @@ namespace ICSharpCode.Decompiler.ILAst
 			if (IsVariableReset(body.ElementAtOrDefault(pos + 1), awaiterVar)) {
 				body.RemoveAt(pos + 1);
 			}
-			
+			/*
+			// In debug mode, three additional stlocs with an intermediate values are created. They could be removed.
+			if (isResultAssignment && pos + 3 < body.Count)
+			{
+				if (body[pos + 1].Match(ILCode.Stloc, out ILVariable temp, out ILExpression result))
+				{
+					if (result.Operand == resultAssignment.Operand)
+					{
+						
+					}
+				}
+			}
+			*/
+			committedPos = pos;
 			return true;
 		}
 		
