@@ -141,8 +141,9 @@ namespace ICSharpCode.Decompiler.ILAst
 				return false;
 			
 			stateMachineStruct = stateMachineVar.Type.ResolveWithinSameModule();
-			if (stateMachineStruct == null || !stateMachineStruct.IsValueType)
+			if (stateMachineStruct == null)
 				return false;
+			var stateMachineIsClass = !stateMachineStruct.IsValueType;
 			moveNextMethod = stateMachineStruct.Methods.FirstOrDefault(f => f.Name == "MoveNext");
 			if (moveNextMethod == null)
 				return false;
@@ -179,7 +180,7 @@ namespace ICSharpCode.Decompiler.ILAst
 				FieldReference builderField2;
 				if (!builderExpr.Match(ILCode.Ldflda, out builderField2, out loadStateMachineForBuilderExpr2))
 					return false;
-				if (builderField2.ResolveWithinSameModule() != builderField || !loadStateMachineForBuilderExpr2.MatchLdloca(stateMachineVar))
+				if (builderField2.ResolveWithinSameModule() != builderField || (!loadStateMachineForBuilderExpr2.MatchLdloca(stateMachineVar) && !loadStateMachineForBuilderExpr2.MatchLdloc(stateMachineVar)))
 					return false;
 			}
 			
@@ -202,8 +203,10 @@ namespace ICSharpCode.Decompiler.ILAst
 				return false;
 			if (createMethodRef.Name != "Create")
 				return false;
-			
-			for (int i = 0; i < method.Body.Count - 5; i++) {
+
+
+
+			for (int i = stateMachineIsClass ? 1 : 0; i < method.Body.Count - 5; i++) {
 				FieldDefinition field;
 				ILExpression fieldInit;
 				if (!MatchStFld(method.Body[i], stateMachineVar, out field, out fieldInit))
@@ -227,7 +230,7 @@ namespace ICSharpCode.Decompiler.ILAst
 			if (!stfld.Match(ILCode.Stfld, out fieldRef, out ldloca, out expr))
 				return false;
 			field = fieldRef.ResolveWithinSameModule();
-			return field != null && ldloca.MatchLdloca(stateMachineVar);
+			return field != null && (ldloca.MatchLdloca(stateMachineVar) || ldloca.MatchLdloc(stateMachineVar));
 		}
 		#endregion
 		
@@ -535,9 +538,16 @@ namespace ICSharpCode.Decompiler.ILAst
 			// stfld(StateMachine::<>u__$awaiter6, ldloc(this), ldloc(CS$0$0001))
 			FieldReference awaiterFieldRef;
 			ILExpression loadThis, loadAwaiterVar;
-			if (!newBody.LastOrDefault().Match(ILCode.Stfld, out awaiterFieldRef, out loadThis, out loadAwaiterVar))
+			var k = newBody[newBody.Count - 1];
+			bool stateMachineIsClass = false;
+			if (k.Match(ILCode.Stloc))
+			{
+				k = newBody[newBody.Count - 2];
+				stateMachineIsClass = true;
+			}
+			if (!k.Match(ILCode.Stfld, out awaiterFieldRef, out loadThis, out loadAwaiterVar))
 				throw new SymbolicAnalysisFailedException();
-			newBody.RemoveAt(newBody.Count - 1); // remove awaiter field assignment
+			newBody.RemoveAt(newBody.Count - (stateMachineIsClass ? 2 : 1)); // remove awaiter field assignment
 			awaiterField = awaiterFieldRef.ResolveWithinSameModule();
 			if (!(awaiterField != null && loadThis.MatchThis() && loadAwaiterVar.MatchLdloc(awaiterVar)))
 				throw new SymbolicAnalysisFailedException();
