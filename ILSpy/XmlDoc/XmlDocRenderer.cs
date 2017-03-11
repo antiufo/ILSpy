@@ -128,8 +128,12 @@ namespace ICSharpCode.ILSpy.XmlDoc
 			}
 			return cref;
 		}
-		
+
+#if CLI
+		internal TextBlock CreateTextBlock()
+#else
 		public TextBlock CreateTextBlock()
+#endif
 		{
 			return new TextBlock { Text = ret.ToString() };
 		}

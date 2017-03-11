@@ -48,6 +48,7 @@ namespace ICSharpCode.ILSpy
 			get { return null; }
 		}
 
+#if !CLI
 		/// <summary>
 		/// Gets the syntax highlighting used for this language.
 		/// </summary>
@@ -58,6 +59,7 @@ namespace ICSharpCode.ILSpy
 				return ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(this.FileExtension);
 			}
 		}
+#endif
 
 		public virtual void DecompileMethod(MethodDefinition method, ITextOutput output, DecompilationOptions options)
 		{
@@ -174,7 +176,7 @@ namespace ICSharpCode.ILSpy
 			return member;
 		}
 
-		#region WriteResourceFilesInProject
+#region WriteResourceFilesInProject
 		protected virtual IEnumerable<Tuple<string, string>> WriteResourceFilesInProject(LoadedAssembly assembly, DecompilationOptions options, HashSet<string> directories)
 		{
 			foreach (EmbeddedResource r in assembly.ModuleDefinition.Resources.OfType<EmbeddedResource>()) {
@@ -256,7 +258,7 @@ namespace ICSharpCode.ILSpy
 				return false;
 			}
 		}
-		#endregion
+#endregion
 
 	}
 }

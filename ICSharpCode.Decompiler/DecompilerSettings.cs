@@ -282,6 +282,19 @@ namespace ICSharpCode.Decompiler
 				}
 			}
 		}
+
+		private bool deterministic = false;
+		public bool Deterministic {
+			get { return deterministic; }
+			set
+			{
+				if (deterministic != value)
+				{
+					deterministic = value;
+					OnPropertyChanged("Deterministic");
+				}
+			}
+		}
 		
 		bool makeAssignmentExpressions = true;
 		
