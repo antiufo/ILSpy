@@ -283,7 +283,7 @@ namespace ICSharpCode.Decompiler
 			}
 		}
 
-		private bool deterministic = false;
+		private bool deterministic = true;
 		public bool Deterministic {
 			get { return deterministic; }
 			set

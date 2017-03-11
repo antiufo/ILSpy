@@ -242,7 +242,7 @@ namespace ICSharpCode.Decompiler.ILAst
 			int startIndex;
 			if (ilMethod.Body.Count == 6) {
 				startIndex = 0;
-			} else if (ilMethod.Body.Count == 7) {
+			} else if (ilMethod.Body.Count == 7 || ilMethod.Body.Count == 8) {
 				// stloc(cachedState, ldfld(valuetype StateMachineStruct::<>1__state, ldloc(this)))
 				ILExpression cachedStateInit;
 				if (!ilMethod.Body[0].Match(ILCode.Stloc, out cachedStateVar, out cachedStateInit))
@@ -255,34 +255,35 @@ namespace ICSharpCode.Decompiler.ILAst
 			} else {
 				throw new SymbolicAnalysisFailedException();
 			}
-			
-			mainTryCatch = ilMethod.Body[startIndex + 0] as ILTryCatchBlock;
+
+			mainTryCatch = ilMethod.Body.OfType<ILTryCatchBlock>().FirstOrDefault();
 			if (mainTryCatch == null || mainTryCatch.CatchBlocks.Count != 1)
 				throw new SymbolicAnalysisFailedException();
 			if (mainTryCatch.FaultBlock != null || mainTryCatch.FinallyBlock != null)
 				throw new SymbolicAnalysisFailedException();
-			
-			setResultAndExitLabel = ilMethod.Body[startIndex + 1] as ILLabel;
+
+			var tryIndex = ilMethod.Body.IndexOf(mainTryCatch);
+			setResultAndExitLabel = ilMethod.Body[tryIndex + 1] as ILLabel;
 			if (setResultAndExitLabel == null)
 				throw new SymbolicAnalysisFailedException();
 			
-			if (!MatchStateAssignment(ilMethod.Body[startIndex + 2], out finalState))
+			if (!MatchStateAssignment(ilMethod.Body[tryIndex + 2], out finalState))
 				throw new SymbolicAnalysisFailedException();
 			
 			// call(AsyncTaskMethodBuilder`1::SetResult, ldflda(StateMachine::<>t__builder, ldloc(this)), ldloc(<>t__result))
 			MethodReference setResultMethod;
 			ILExpression builderExpr;
 			if (methodType == AsyncMethodType.TaskOfT) {
-				if (!ilMethod.Body[startIndex + 3].Match(ILCode.Call, out setResultMethod, out builderExpr, out resultExpr))
+				if (!ilMethod.Body.Skip(startIndex).First(x => x.Match(ILCode.Call)).Match(ILCode.Call, out setResultMethod, out builderExpr, out resultExpr))
 					throw new SymbolicAnalysisFailedException();
 			} else {
-				if (!ilMethod.Body[startIndex + 3].Match(ILCode.Call, out setResultMethod, out builderExpr))
+				if (!ilMethod.Body.Skip(startIndex).First(x => x.Match(ILCode.Call)).Match(ILCode.Call, out setResultMethod, out builderExpr))
 					throw new SymbolicAnalysisFailedException();
 			}
 			if (!(setResultMethod.Name == "SetResult" && IsBuilderFieldOnThis(builderExpr)))
 				throw new SymbolicAnalysisFailedException();
 			
-			exitLabel = ilMethod.Body[startIndex + 4] as ILLabel;
+			exitLabel = ilMethod.Body.Skip(tryIndex).OfType<ILLabel>().LastOrDefault();
 			if (exitLabel == null)
 				throw new SymbolicAnalysisFailedException();
 		}
@@ -585,7 +586,10 @@ namespace ICSharpCode.Decompiler.ILAst
 		{
 			if (context.CurrentMethodIsAsync) {
 				Step2(method.Body);
+				//var c = method.Body.Skip(2).TakeWhile(x => x.Match(ILCode.Brtrue)).Count();
+				//method.Body.RemoveRange(2, c);
 				ILAstOptimizer.RemoveRedundantCode(method);
+				
 				// Repeat the inlining/copy propagation optimization because the conversion of field access
 				// to local variables can open up additional inlining possibilities.
 				ILInlining inlining = new ILInlining(method);
@@ -672,13 +676,14 @@ namespace ICSharpCode.Decompiler.ILAst
 			int labelPos = body.IndexOf(label);
 			if (labelPos < pos)
 				return false;
+			var jumpsToRemove = new List<ILLabel>();
 			for (int i = pos + 1; i < labelPos; i++) {
 				// validate that we aren't deleting any unexpected instructions -
 				// between the await and the label, there should only be the stack, awaiter and state logic
 				ILExpression expr = body[i] as ILExpression;
 				if (expr == null)
 				{
-					if (body[i] is ILLabel) continue;
+					if (body[i] is ILLabel l) { jumpsToRemove.Add(l) ; continue; }
 					return false;
 				}
 				switch (expr.Code) {
@@ -739,6 +744,10 @@ namespace ICSharpCode.Decompiler.ILAst
 				}
 			}
 			*/
+			var k = body[pos];
+			body.RemoveAll(x => x is ILExpression e && (e.Code == ILCode.Br || e.Code == ILCode.Brtrue) && jumpsToRemove.Contains(e.Operand));
+			
+			pos = body.IndexOf(k);
 			committedPos = pos;
 			return true;
 		}
