@@ -284,7 +284,7 @@ namespace ICSharpCode.Decompiler
 
 		public static bool HasGeneratedName(this MemberReference member)
 		{
-			return member.Name.StartsWith("<", StringComparison.Ordinal);
+			return member.Name.StartsWith("<", StringComparison.Ordinal) && !member.Name.StartsWith("<>n", StringComparison.Ordinal);
 		}
 		
 		public static bool ContainsAnonymousType(this TypeReference type)

@@ -219,67 +219,75 @@ namespace ICSharpCode.Decompiler.ILAst
 			}
 		}
 
-        void CachedDelegateInitializationWithField2(ILBlock block, ref int i)
-        {
-            // if (logicnot(stloc(v, ldsfld(field)))) {
-            //     stloc(v, stsfld(field, newobj(Action::.ctor, ldnull(), ldftn(method))))
-            // } else {
-            // }
-            // ...(..., ldloc(v), ...)
+		void CachedDelegateInitializationWithField2(ILBlock block, ref int i)
+		{
+			// if (logicnot(stloc(v, ldsfld(field)))) {
+			//     stloc(v, stsfld(field, newobj(Action::.ctor, ldnull(), ldftn(method))))
+			// } else {
+			// }
+			// ...(..., ldloc(v), ...)
 
-            ILCondition c = block.Body[i] as ILCondition;
-            if (c == null || c.Condition == null && c.TrueBlock == null || c.FalseBlock == null)
-                return;
-            if (!(c.TrueBlock.Body.Count == 1 && c.FalseBlock.Body.Count == 0))
-                return;
-            if (!c.Condition.Match(ILCode.LogicNot))
-                return;
-            ILExpression stloc = c.Condition.Arguments.Single() as ILExpression;
-            if (stloc == null || stloc.Code != ILCode.Stloc)
-                return;
-            ILExpression condition = stloc.Arguments.Single() as ILExpression;
-            if (condition == null || condition.Code != ILCode.Ldsfld)
-                return;
-            FieldDefinition field = ((FieldReference)condition.Operand).ResolveWithinSameModule(); // field is defined in current assembly
-            if (field == null || !field.IsCompilerGeneratedOrIsInCompilerGeneratedClass())
-                return;
-            ILExpression stloc2 = c.TrueBlock.Body[0] as ILExpression;
-            if (stloc2 == null || stloc2.Code != ILCode.Stloc || stloc2.Operand != stloc.Operand)
-                return;
-            ILExpression stsfld = stloc2.Arguments.Single() as ILExpression;
-            if (!(stsfld != null && stsfld.Code == ILCode.Stsfld && ((FieldReference)stsfld.Operand).ResolveWithinSameModule() == field))
-                return;
-            ILExpression newObj = stsfld.Arguments[0];
-            if (!(newObj.Code == ILCode.Newobj && newObj.Arguments.Count == 2))
-                return;
-            if (newObj.Arguments[0].Code != ILCode.Ldsfld)
-                return;
-            if (newObj.Arguments[1].Code != ILCode.Ldftn)
-                return;
-            MethodDefinition anonymousMethod = ((MethodReference)newObj.Arguments[1].Operand).ResolveWithinSameModule(); // method is defined in current assembly
-            if (!Ast.Transforms.DelegateConstruction.IsAnonymousMethod(context, anonymousMethod))
-                return;
+			ILCondition c = block.Body[i] as ILCondition;
+			if (c == null || c.Condition == null && c.TrueBlock == null || c.FalseBlock == null)
+				return;
+			if (!(c.TrueBlock.Body.Count == 1 && c.FalseBlock.Body.Count == 0))
+				return;
+			if (!c.Condition.Match(ILCode.LogicNot))
+				return;
+			ILExpression stloc = c.Condition.Arguments.Single() as ILExpression;
+			if (stloc == null || stloc.Code != ILCode.Stloc)
+				return;
+			ILExpression condition = stloc.Arguments.Single() as ILExpression;
+			if (condition == null || condition.Code != ILCode.Ldsfld)
+				return;
+			FieldDefinition field = ((FieldReference)condition.Operand).ResolveWithinSameModule(); // field is defined in current assembly
+			if (field == null || !field.IsCompilerGeneratedOrIsInCompilerGeneratedClass())
+				return;
+			ILExpression stloc2 = c.TrueBlock.Body[0] as ILExpression;
+			if (stloc2 == null || stloc2.Code != ILCode.Stloc || stloc2.Operand != stloc.Operand)
+				return;
+			ILExpression stsfld = stloc2.Arguments.Single() as ILExpression;
+			if (!(stsfld != null && stsfld.Code == ILCode.Stsfld && ((FieldReference)stsfld.Operand).ResolveWithinSameModule() == field))
+				return;
+			ILExpression newObj = stsfld.Arguments[0];
+			if (!(newObj.Code == ILCode.Newobj && newObj.Arguments.Count == 2))
+				return;
+			if (newObj.Arguments[0].Code != ILCode.Ldsfld)
+				return;
+			if (newObj.Arguments[1].Code != ILCode.Ldftn)
+				return;
+			MethodDefinition anonymousMethod = ((MethodReference)newObj.Arguments[1].Operand).ResolveWithinSameModule(); // method is defined in current assembly
+			if (!Ast.Transforms.DelegateConstruction.IsAnonymousMethod(context, anonymousMethod))
+				return;
 
-            ILNode followingNode = block.Body.ElementAtOrDefault(i + 1);
-            if (followingNode != null && followingNode.GetSelfAndChildrenRecursive<ILExpression>().Count(
-                e => e.Code == ILCode.Ldloc && e.Operand == stloc.Operand) == 1)
-            {
-                foreach (ILExpression parent in followingNode.GetSelfAndChildrenRecursive<ILExpression>())
-                {
-                    for (int j = 0; j < parent.Arguments.Count; j++)
-                    {
-                        if (parent.Arguments[j].Code == ILCode.Ldloc && parent.Arguments[j].Operand == stloc.Operand)
-                        {
-                            parent.Arguments[j] = newObj;
-                            block.Body.RemoveAt(i);
-                            i -= new ILInlining(method).InlineInto(block.Body, i, aggressive: false);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
+			ILNode followingNode = block.Body.ElementAtOrDefault(i + 1);
+			if (followingNode != null && followingNode.GetSelfAndChildrenRecursive<ILExpression>().Count(
+				e => e.Code == ILCode.Ldloc && e.Operand == stloc.Operand) == 1)
+			{
+				foreach (ILExpression parent in followingNode.GetSelfAndChildrenRecursive<ILExpression>())
+				{
+					for (int j = 0; j < parent.Arguments.Count; j++)
+					{
+						if (parent.Arguments[j].Code == ILCode.Ldloc && parent.Arguments[j].Operand == stloc.Operand)
+						{
+							parent.Arguments[j] = newObj;
+							block.Body.RemoveAt(i);
+							i -= new ILInlining(method).InlineInto(block.Body, i, aggressive: false);
 
+							// HACK: Fixes case where a function receives more than one lambda as argument.
+							//       We need to check for i>0 to avoid running out of bounds when lambdas
+							//       are passed to the first call in a function.
+							if (i > 0)
+							{
+								i--;
+								CachedDelegateInitializationWithField2(block, ref i);
+							}
+							return;
+						}
+					}
+				}
+			}
+		}
 
         void CachedDelegateInitializationWithLocal(ILBlock block, ref int i)
 		{

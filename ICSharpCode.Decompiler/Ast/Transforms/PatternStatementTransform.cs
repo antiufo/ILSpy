@@ -683,6 +683,28 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				}
 			}};
 
+		static readonly AstNode lockTryCatchPatternRoslyn = new TryCatchStatement
+		{
+			TryBlock = new BlockStatement {
+				new ExpressionStatement(new AssignmentExpression(new AnyNode(), new AnyNode("target"))),
+				new TypePattern(typeof(System.Threading.Monitor)).ToType().Invoke(
+					"Enter", new AnyNode("enter"),
+					new DirectionExpression {
+						FieldDirection = FieldDirection.Ref,
+						Expression = new NamedNode("flag", new IdentifierExpression(Pattern.AnyString))
+					}),
+				new Repeat(new AnyNode()).ToStatement()
+			},
+			FinallyBlock = new BlockStatement {
+				new IfElseStatement {
+					Condition = new Backreference("flag"),
+					TrueStatement = new BlockStatement {
+						new TypePattern(typeof(System.Threading.Monitor)).ToType().Invoke("Exit", new AnyNode("exit"))
+					}
+				}
+			}
+		};
+
 		static readonly AstNode oldMonitorCallPattern = new ExpressionStatement(
 			new TypePattern(typeof(System.Threading.Monitor)).ToType().Invoke("Enter", new AnyNode("enter"))
 		);
@@ -723,9 +745,24 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			return m1.Get<IdentifierExpression>("variable").Single().Identifier == m2.Get<IdentifierExpression>("flag").Single().Identifier;
 		}
 		
+		bool AnalyzeLockRoslyn(ExpressionStatement node, out Expression target, out Expression enter, out Expression exit)
+		{
+			target = null;
+			enter = null;
+			exit = null;
+			Match m1 = lockFlagInitPattern.Match(node);
+			if (!m1.Success) return false;
+			Match m2 = lockTryCatchPatternRoslyn.Match(node.NextSibling);
+			if (!m2.Success) return false;
+			target = m2.Get<Expression>("target").Single();
+			enter = m2.Get<Expression>("enter").Single();
+			exit = m2.Get<Expression>("exit").Single();
+			return m1.Get<IdentifierExpression>("variable").Single().Identifier == m2.Get<IdentifierExpression>("flag").Single().Identifier;
+		}
+
 		public LockStatement TransformLock(ExpressionStatement node)
 		{
-			Expression enter, exit;
+			Expression target, enter, exit;
 			bool isV2 = AnalyzeLockV2(node, out enter, out exit);
 			if (isV2 || AnalyzeLockV4(node, out enter, out exit)) {
 				AstNode tryCatch = node.NextSibling;
@@ -746,6 +783,18 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				l.EmbeddedStatement = ((TryCatchStatement)tryCatch).TryBlock.Detach();
 				if (!isV2) // Remove 'Enter()' call
 					((BlockStatement)l.EmbeddedStatement).Statements.First().Remove(); 
+				tryCatch.ReplaceWith(l);
+				node.Remove(); // remove flag variable
+				return l;
+			} else if(AnalyzeLockRoslyn(node, out target, out enter, out exit)) {
+				AstNode tryCatch = node.NextSibling;
+				if (!exit.IsMatch(enter)) return null;
+				// transform the code into a lock statement:
+				LockStatement l = new LockStatement();
+				l.Expression = target.Detach();
+				l.EmbeddedStatement = ((TryCatchStatement)tryCatch).TryBlock.Detach();
+				((BlockStatement)l.EmbeddedStatement).Statements.First().Remove(); // the "obj = ..."
+				((BlockStatement)l.EmbeddedStatement).Statements.First().Remove(); // the "Monitor.Enter(obj, ref flag)"
 				tryCatch.ReplaceWith(l);
 				node.Remove(); // remove flag variable
 				return l;
