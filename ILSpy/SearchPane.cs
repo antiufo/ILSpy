@@ -34,6 +34,7 @@ using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using ICSharpCode.Decompiler.Ast;
 
 namespace ICSharpCode.ILSpy
 {
@@ -224,7 +225,7 @@ namespace ICSharpCode.ILSpy
 						if (module == null)
 							continue;
 						CancellationToken cancellationToken = cts.Token;
-
+						
 						foreach (TypeDefinition type in module.Types) {
 							cancellationToken.ThrowIfCancellationRequested();
 							searcher.Search(type, language, AddResult);

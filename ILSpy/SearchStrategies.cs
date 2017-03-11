@@ -9,6 +9,8 @@ using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using ICSharpCode.Decompiler.Ast;
+using ICSharpCode.ILSpy.Options;
 
 namespace ICSharpCode.ILSpy
 {
@@ -90,7 +92,7 @@ namespace ICSharpCode.ILSpy
 		void Add<T>(IEnumerable<T> items, TypeDefinition type, Language language, Action<SearchResult> addResult, Func<T, bool> matcher, Func<T, ImageSource> image) where T : MemberReference
 		{
 			foreach (var item in items) {
-				if (matcher(item)) {
+				if (matcher(item) && !AstBuilder.MemberIsHidden(item, DecompilerSettingsPanel.CurrentDecompilerSettings)) {
 					addResult(new SearchResult
 					{
 						Member = item,
@@ -382,6 +384,7 @@ namespace ICSharpCode.ILSpy
 
 		public override void Search(TypeDefinition type, Language language, Action<SearchResult> addResult)
 		{
+			if (AstBuilder.MemberIsHidden(type, DecompilerSettingsPanel.CurrentDecompilerSettings)) return;
 			if (IsMatch(type.Name) || IsMatch(type.FullName))
 			{
 				addResult(new SearchResult
