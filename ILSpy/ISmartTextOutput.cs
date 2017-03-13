@@ -44,6 +44,7 @@ namespace ICSharpCode.ILSpy
 		/// </summary>
 		public static void AddButton(this ISmartTextOutput output, ImageSource icon, string text, RoutedEventHandler click)
 		{
+#if !CLI
 			output.AddUIElement(
 				delegate {
 					Button button = new Button();
@@ -65,6 +66,7 @@ namespace ICSharpCode.ILSpy
 					button.Click += click;
 					return button;
 				});
+#endif
 		}
 	}
 }

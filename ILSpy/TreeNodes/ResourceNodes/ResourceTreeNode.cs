@@ -46,7 +46,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		public Resource Resource {
 			get { return r; }
 		}
-		
+#if !CLI
 		public override object Text {
 			get { return r.Name; }
 		}
@@ -64,18 +64,20 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			else
 				return FilterResult.Hidden;
 		}
-		
+#endif
 		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
 		{
 			language.WriteCommentLine(output, string.Format("{0} ({1}, {2})", r.Name, r.ResourceType, r.Attributes));
 			
 			ISmartTextOutput smartOutput = output as ISmartTextOutput;
+#if !CLI
 			if (smartOutput != null && r is EmbeddedResource) {
 				smartOutput.AddButton(Images.Save, "Save", delegate { Save(null); });
 				output.WriteLine();
 			}
+#endif
 		}
-		
+#if !CLI
 		public override bool View(DecompilerTextView textView)
 		{
 			EmbeddedResource er = r as EmbeddedResource;
@@ -118,7 +120,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			}
 			return false;
 		}
-		
+#endif
 		public static ILSpyTreeNode Create(Resource resource)
 		{
 			ILSpyTreeNode result = null;

@@ -59,7 +59,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			this.data = new ImageList();
 			this.data.ImageStream = data;
 		}
-
+#if !CLI
 		public override object Text
 		{
 			get { return key; }
@@ -69,7 +69,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		{
 			get { return Images.ResourceImage; }
 		}
-
+#endif
 		protected override void LoadChildren()
 		{
 			int i = 0;

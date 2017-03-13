@@ -14,6 +14,7 @@ using System.Linq;
 
 namespace ILSpy.BamlDecompiler
 {
+#if !CLI
 	[Export(typeof(IResourceNodeFactory))]
 	public sealed class BamlResourceNodeFactory : IResourceNodeFactory
 	{
@@ -25,12 +26,12 @@ namespace ILSpy.BamlDecompiler
 		public ILSpyTreeNode CreateNode(string key, object data)
 		{
 			if (key.EndsWith(".baml", StringComparison.OrdinalIgnoreCase) && data is Stream)
-				return new BamlResourceEntryNode(key, (Stream)data);
+				return new BamlResourceEntryNode(key, (Stream)data, data.GetType());
 			else
 				return null;
 		}
 	}
-
+#endif
 	[Export(typeof(IResourceFileHandler))]
 	public sealed class BamlResourceFileHandler : IResourceFileHandler
 	{

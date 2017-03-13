@@ -45,14 +45,14 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			if (data is System.Drawing.Image)
 			{
 				MemoryStream s = new MemoryStream();
-				((System.Drawing.Image)data).Save(s, System.Drawing.Imaging.ImageFormat.Bmp);
-				return new ImageResourceEntryNode(key, s);
+				((System.Drawing.Image)data).Save(s, System.Drawing.Imaging.ImageFormat.Png);
+				return new ImageResourceEntryNode(key, s, data.GetType());
 			}
 			if (!(data is Stream))
 			    return null;
 			foreach (string fileExt in imageFileExtensions) {
 				if (key.EndsWith(fileExt, StringComparison.OrdinalIgnoreCase))
-					return new ImageResourceEntryNode(key, (Stream)data);
+					return new ImageResourceEntryNode(key, (Stream)data, data.GetType());
 			}
 			return null;
 		}
@@ -60,11 +60,11 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 	sealed class ImageResourceEntryNode : ResourceEntryNode
 	{
-		public ImageResourceEntryNode(string key, Stream data)
-			: base(key, data)
+		public ImageResourceEntryNode(string key, Stream data, Type type)
+			: base(key, data, type)
 		{
 		}
-
+#if !CLI
 		public override object Icon
 		{
 			get { return Images.ResourceImage; }
@@ -91,5 +91,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				return false;
 			}
 		}
+#endif
 	}
 }

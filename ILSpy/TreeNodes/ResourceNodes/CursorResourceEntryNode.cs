@@ -23,6 +23,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using ICSharpCode.ILSpy.TextView;
 using Mono.Cecil;
+using System.Windows.Forms;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
@@ -46,7 +47,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			    return null;
 			foreach (string fileExt in imageFileExtensions) {
 				if (key.EndsWith(fileExt, StringComparison.OrdinalIgnoreCase))
-					return new CursorResourceEntryNode(key, (Stream)data);
+					return new CursorResourceEntryNode(key, (Stream)data, data.GetType());
 			}
 			return null;
 		}
@@ -54,16 +55,17 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 	sealed class CursorResourceEntryNode : ResourceEntryNode
 	{
-		public CursorResourceEntryNode(string key, Stream data)
-			: base(key, data)
+		public CursorResourceEntryNode(string key, Stream data, Type type)
+			: base(key, data, type)
 		{
 		}
 
+
+#if !CLI
 		public override object Icon
 		{
 			get { return Images.ResourceImage; }
 		}
-
 		public override bool View(DecompilerTextView textView)
 		{
 			try {
@@ -100,5 +102,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				return false;
 			}
 		}
+#endif
 	}
 }

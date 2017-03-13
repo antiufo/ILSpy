@@ -56,17 +56,21 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		readonly ICollection<KeyValuePair<string, string>> stringTableEntries = new ObservableCollection<KeyValuePair<string, string>>();
 		readonly ICollection<SerializedObjectRepresentation> otherEntries = new ObservableCollection<SerializedObjectRepresentation>();
 
+		public ICollection<KeyValuePair<string, string>> StringTableEntries { get { return stringTableEntries; } }
+		public ICollection<SerializedObjectRepresentation> OtherEntries { get { return otherEntries; } }
+
 		public ResourcesFileTreeNode(EmbeddedResource er)
 			: base(er)
 		{
 			this.LazyLoading = true;
 		}
 
+#if !CLI
 		public override object Icon
 		{
 			get { return Images.ResourceResourcesFile; }
 		}
-
+#endif
 		protected override void LoadChildren()
 		{
 			EmbeddedResource er = this.Resource as EmbeddedResource;
@@ -108,12 +112,13 @@ namespace ICSharpCode.ILSpy.TreeNodes
 
 			string entryType = entry.Value.GetType().FullName;
 			if (entry.Value is System.Globalization.CultureInfo) {
-				otherEntries.Add(new SerializedObjectRepresentation(keyString, entryType, ((System.Globalization.CultureInfo)entry.Value).DisplayName));
+				otherEntries.Add(new SerializedObjectRepresentation(keyString, entryType, ((System.Globalization.CultureInfo)entry.Value).DisplayName, entry.Value));
 			} else {
-				otherEntries.Add(new SerializedObjectRepresentation(keyString, entryType, entry.Value.ToString()));
+				otherEntries.Add(new SerializedObjectRepresentation(keyString, entryType, entry.Value.ToString(), entry.Value));
 			}
 		}
-		
+
+#if !CLI
 		public override bool Save(DecompilerTextView textView)
 		{
 			EmbeddedResource er = this.Resource as EmbeddedResource;
@@ -144,6 +149,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			}
 			return false;
 		}
+#endif
 
 		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
 		{
@@ -151,6 +157,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			base.Decompile(language, output, options);
 			if (stringTableEntries.Count != 0) {
 				ISmartTextOutput smartOutput = output as ISmartTextOutput;
+#if !CLI
 				if (null != smartOutput) {
 					smartOutput.AddUIElement(
 						delegate {
@@ -158,10 +165,12 @@ namespace ICSharpCode.ILSpy.TreeNodes
 						}
 					);
 				}
+#endif
 				output.WriteLine();
 				output.WriteLine();
 			}
 			if (otherEntries.Count != 0) {
+#if !CLI
 				ISmartTextOutput smartOutput = output as ISmartTextOutput;
 				if (null != smartOutput) {
 					smartOutput.AddUIElement(
@@ -170,22 +179,25 @@ namespace ICSharpCode.ILSpy.TreeNodes
 						}
 					);
 				}
+#endif
 				output.WriteLine();
 			}
 		}
 
 		internal class SerializedObjectRepresentation
 		{
-			public SerializedObjectRepresentation(string key, string type, string value)
+			public SerializedObjectRepresentation(string key, string type, string value, object originalValue)
 			{
 				this.Key = key;
 				this.Type = type;
 				this.Value = value;
+				this.OriginalValue = value;
 			}
 
 			public string Key { get; private set; }
 			public string Type { get; private set; }
 			public string Value { get; private set; }
+			public object OriginalValue { get; private set; }
 		}
 	}
 }

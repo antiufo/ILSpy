@@ -32,8 +32,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -41,8 +44,90 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ILSpy.BamlDecompiler\BamlResourceEntryNode.cs">
+      <Link>BamlDecompiler\BamlResourceEntryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\BamlResourceNodeFactory.cs">
+      <Link>BamlDecompiler\BamlResourceNodeFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\CecilDependencyPropertyDescriptor.cs">
+      <Link>BamlDecompiler\CecilDependencyPropertyDescriptor.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\CecilType.cs">
+      <Link>BamlDecompiler\CecilType.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\CecilTypeResolver.cs">
+      <Link>BamlDecompiler\CecilTypeResolver.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\ConnectMethodDecompiler.cs">
+      <Link>BamlDecompiler\ConnectMethodDecompiler.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Extensions.cs">
+      <Link>BamlDecompiler\Extensions.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\BamlBinaryReader.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\BamlBinaryReader.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\BamlRecordType.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\BamlRecordType.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\IDependencyPropertyDescriptor.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\IDependencyPropertyDescriptor.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\IType.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\IType.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\ITypeResolver.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\ITypeResolver.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\KeyMapping.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\KeyMapping.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\KnownInfo.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\KnownInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\NodesCollection.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\NodesCollection.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\PropertyDeclaration.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\PropertyDeclaration.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\ResourceName.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\ResourceName.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\TypeDeclaration.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\TypeDeclaration.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlElement.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlElement.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlNode.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlProperty.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlPropertyElement.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlPropertyElement.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlReader.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlReader.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlSimpleProperty.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlSimpleProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlText.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlBamlText.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlNamespace.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlNamespace.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy.BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlPIMapping.cs">
+      <Link>BamlDecompiler\Ricciolo.StylesExplorer.MarkupReflection\XmlPIMapping.cs</Link>
+    </Compile>
     <Compile Include="..\ILSpy\AssemblyList.cs">
       <Link>AssemblyList.cs</Link>
     </Compile>
@@ -60,6 +145,9 @@
     </Compile>
     <Compile Include="..\ILSpy\ILSpySettings.cs">
       <Link>ILSpySettings.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\ISmartTextOutput.cs">
+      <Link>ISmartTextOutput.cs</Link>
     </Compile>
     <Compile Include="..\ILSpy\Languages\CSharpLanguage.cs">
       <Link>CSharpLanguage.cs</Link>
@@ -87,6 +175,36 @@
     </Compile>
     <Compile Include="..\ILSpy\TreeNodes\Analyzer\Helpers.cs">
       <Link>Helpers.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\CursorResourceEntryNode.cs">
+      <Link>ResourceNodes\CursorResourceEntryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\IconResourceEntryNode.cs">
+      <Link>ResourceNodes\IconResourceEntryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\ImageListResourceEntryNode.cs">
+      <Link>ResourceNodes\ImageListResourceEntryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\ImageResourceEntryNode.cs">
+      <Link>ResourceNodes\ImageResourceEntryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\IResourceNodeFactory.cs">
+      <Link>ResourceNodes\IResourceNodeFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\ResourceEntryNode.cs">
+      <Link>ResourceNodes\ResourceEntryNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\ResourcesFileTreeNode.cs">
+      <Link>ResourceNodes\ResourcesFileTreeNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\ResourceTreeNode.cs">
+      <Link>ResourceNodes\ResourceTreeNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\XamlResourceNode.cs">
+      <Link>ResourceNodes\XamlResourceNode.cs</Link>
+    </Compile>
+    <Compile Include="..\ILSpy\TreeNodes\ResourceNodes\XmlResourceNode.cs">
+      <Link>ResourceNodes\XmlResourceNode.cs</Link>
     </Compile>
     <Compile Include="..\ILSpy\XmlDoc\AddXmlDocTransform.cs">
       <Link>AddXmlDocTransform.cs</Link>

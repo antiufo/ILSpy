@@ -25,6 +25,8 @@ using System.Resources;
 
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using System.Drawing;
+using ICSharpCode.ILSpy.TreeNodes;
 
 namespace ICSharpCode.ILSpy
 {
@@ -180,50 +182,85 @@ namespace ICSharpCode.ILSpy
 		protected virtual IEnumerable<Tuple<string, string>> WriteResourceFilesInProject(LoadedAssembly assembly, DecompilationOptions options, HashSet<string> directories)
 		{
 			foreach (EmbeddedResource r in assembly.ModuleDefinition.Resources.OfType<EmbeddedResource>()) {
+				
 				Stream stream = r.GetResourceStream();
 				stream.Position = 0;
 
-				IEnumerable<DictionaryEntry> entries;
-				if (r.Name.EndsWith(".resources", StringComparison.OrdinalIgnoreCase)) {
-					if (GetEntries(stream, out entries) && entries.All(e => e.Value is Stream)) {
-						foreach (var pair in entries) {
-							string fileName = Path.Combine(((string)pair.Key).Split('/').Select(p => TextView.DecompilerTextView.CleanUpName(p)).ToArray());
-							string dirName = Path.GetDirectoryName(fileName);
-							if (!string.IsNullOrEmpty(dirName) && directories.Add(dirName)) {
-								Directory.CreateDirectory(Path.Combine(options.SaveAsProjectDirectory, dirName));
-							}
-							Stream entryStream = (Stream)pair.Value;
-							bool handled = false;
-							foreach (var handler in App.CompositionContainer.GetExportedValues<IResourceFileHandler>()) {
-								if (handler.CanHandle(fileName, options)) {
-									handled = true;
-									entryStream.Position = 0;
-									yield return Tuple.Create(handler.EntryType, handler.WriteResourceToFile(assembly, fileName, entryStream, options));
-									break;
-								}
-							}
-							if (!handled) {
-								using (FileStream fs = new FileStream(Path.Combine(options.SaveAsProjectDirectory, fileName), FileMode.Create, FileAccess.Write)) {
-									entryStream.Position = 0;
-									entryStream.CopyTo(fs);
-								}
-								yield return Tuple.Create("EmbeddedResource", fileName);
+				if (r.Name.EndsWith(".resources", StringComparison.OrdinalIgnoreCase))
+				{
+					var res = new ResourcesFileTreeNode(r);
+					res.EnsureLazyChildren();
+					var refs = new Dictionary<string, ResXFileRef>();
+					foreach (var resourceItem in res.Children.Cast<ResourceEntryNode>())
+					{
+						
+						
+						
+						string fileName = Path.Combine("Resources", Path.Combine(((string)resourceItem.Key).Split('/').Select(p => TextView.DecompilerTextView.CleanUpName(p)).ToArray()));
+						string dirName = Path.GetDirectoryName(fileName);
+						if (!string.IsNullOrEmpty(dirName) && directories.Add(dirName)) {
+							Directory.CreateDirectory(Path.Combine(options.SaveAsProjectDirectory, dirName));
+						}
+						Stream entryStream = resourceItem.Data;
+						bool handled = false;
+						foreach (var handler in App.CompositionContainer.GetExportedValues<IResourceFileHandler>()) {
+							if (handler.CanHandle(fileName, options)) {
+								handled = true;
+								entryStream.Position = 0;
+								yield return Tuple.Create(handler.EntryType, handler.WriteResourceToFile(assembly, fileName, entryStream, options));
+								break;
 							}
 						}
-					} else {
-						stream.Position = 0;
-						string fileName = GetFileNameForResource(Path.ChangeExtension(r.Name, ".resx"), directories);
-						using (ResourceReader reader = new ResourceReader(stream))
-						using (FileStream fs = new FileStream(Path.Combine(options.SaveAsProjectDirectory, fileName), FileMode.Create, FileAccess.Write))
-						using (ResXResourceWriter writer = new ResXResourceWriter(fs)) {
-							foreach (DictionaryEntry entry in reader) {
-								writer.AddResource((string)entry.Key, entry.Value);
+						if (!handled) {
+							var ext = Path.GetExtension(fileName);
+							if (string.IsNullOrEmpty(ext))
+							{
+								entryStream.Position = 0;
+								ext = SniffFileType(entryStream);
+								if (ext != null) fileName += ext;
 							}
+							using (FileStream fs = new FileStream(Path.Combine(options.SaveAsProjectDirectory, fileName), FileMode.Create, FileAccess.Write)) {
+								entryStream.Position = 0;
+								entryStream.CopyTo(fs);
+							}
+							refs.Add(resourceItem.Key, new ResXFileRef(fileName, resourceItem.Type.AssemblyQualifiedName));
+							//yield return Tuple.Create("EmbeddedResource", fileName);
 						}
-						yield return Tuple.Create("EmbeddedResource", fileName);
 					}
+						
+					string resx = Path.Combine("Resources", GetFileNameForResource(Path.ChangeExtension(r.Name, ".resx"), directories));
+					var dirName2 = Path.GetDirectoryName(resx);
+					if (!string.IsNullOrEmpty(dirName2) && directories.Add(dirName2))
+					{
+						Directory.CreateDirectory(Path.Combine(options.SaveAsProjectDirectory, dirName2));
+					}
+					//using (ResourceReader reader = new ResourceReader(stream))
+					if (res.StringTableEntries.Count + res.OtherEntries.Count + refs.Count != 0)
+					{
+						using (FileStream fs = new FileStream(Path.Combine(options.SaveAsProjectDirectory, resx), FileMode.Create, FileAccess.Write))
+						using (ResXResourceWriter writer = new ResXResourceWriter(fs))
+						{
+							foreach (var item in res.StringTableEntries)
+							{
+								writer.AddResource(item.Key, item.Value);
+							}
+							foreach (var item in res.OtherEntries)
+							{
+								writer.AddResource(new ResXDataNode(item.Key, item.Value));
+							}
+
+							foreach (var item in refs)
+							{
+								writer.AddResource(new ResXDataNode(item.Key, item.Value));
+							}
+						}
+
+						yield return Tuple.Create("EmbeddedResource", resx);
+					}
+					
+					
 				} else {
-					string fileName = GetFileNameForResource(r.Name, directories);
+					string fileName = Path.Combine("Resources", GetFileNameForResource(r.Name, directories));
 					using (FileStream fs = new FileStream(Path.Combine(options.SaveAsProjectDirectory, fileName), FileMode.Create, FileAccess.Write)) {
 						stream.Position = 0;
 						stream.CopyTo(fs);
@@ -233,8 +270,29 @@ namespace ICSharpCode.ILSpy
 			}
 		}
 
+		private static string SniffFileType(Stream entryStream)
+		{
+			var buffer = new byte[10];
+			var len = entryStream.Read(buffer, 0, buffer.Length);
+			var b = System.Text.Encoding.GetEncoding("windows-1252").GetString(buffer, 0, len);
+			if (b.StartsWith("‰PNG")) return ".png";
+			if (b.StartsWith("GIF89a")) return ".gif";
+			if (b.StartsWith("GIF87a")) return ".gif";
+			if (b.StartsWith("ÿØÿ")) return ".jpg";
+			if (b.StartsWith("MZ")) return ".dll";
+			if (b.StartsWith("PK")) return ".zip";
+			if (b.StartsWith("BM")) return ".bmp";
+			if (b.StartsWith("<!doctype")) return ".html";
+			if (b.StartsWith("\0\0\x01\0")) return ".ico";
+
+
+			return null;
+		}
+
 		string GetFileNameForResource(string fullName, HashSet<string> directories)
 		{
+			return TextView.DecompilerTextView.CleanUpName(fullName);
+			/*
 			string[] splitName = fullName.Split('.');
 			string fileName = TextView.DecompilerTextView.CleanUpName(fullName);
 			for (int i = splitName.Length - 1; i > 0; i--) {
@@ -246,16 +304,15 @@ namespace ICSharpCode.ILSpy
 				}
 			}
 			return fileName;
+			*/
 		}
 
-		bool GetEntries(Stream stream, out IEnumerable<DictionaryEntry> entries)
+		ResourceSet GetEntries(Stream stream)
 		{
 			try {
-				entries = new ResourceSet(stream).Cast<DictionaryEntry>();
-				return true;
+				return new ResourceSet(stream);
 			} catch (ArgumentException) {
-				entries = null;
-				return false;
+				return null;
 			}
 		}
 #endregion

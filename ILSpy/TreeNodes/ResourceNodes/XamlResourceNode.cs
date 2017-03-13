@@ -38,7 +38,7 @@ namespace ICSharpCode.ILSpy.Xaml
 		public ILSpyTreeNode CreateNode(string key, object data)
 		{
 			if (key.EndsWith(".xaml", StringComparison.OrdinalIgnoreCase) && data is Stream)
-				return new XamlResourceEntryNode(key, (Stream)data);
+				return new XamlResourceEntryNode(key, (Stream)data, data.GetType());
 			else
 				return null;
 		}
@@ -48,10 +48,10 @@ namespace ICSharpCode.ILSpy.Xaml
 	{
 		string xaml;
 		
-		public XamlResourceEntryNode(string key, Stream data) : base(key, data)
+		public XamlResourceEntryNode(string key, Stream data, Type type) : base(key, data, type)
 		{
 		}
-		
+#if !CLI
 		public override bool View(DecompilerTextView textView)
 		{
 			AvalonEditTextOutput output = new AvalonEditTextOutput();
@@ -77,5 +77,6 @@ namespace ICSharpCode.ILSpy.Xaml
 			).Then(t => textView.ShowNode(t, this, highlighting)).HandleExceptions();
 			return true;
 		}
+#endif
 	}
 }

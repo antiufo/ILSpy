@@ -26,6 +26,11 @@ namespace ILSpy.Cli
 		[Configuration(CommandLineAlias = "deterministic")]
 		public static bool Configuration_Deterministic;
 
+		[Configuration(CommandLineAlias = "clean-dir")]
+		public static bool Configuration_CleanDirectory;
+
+
+
 
 
 
@@ -86,8 +91,16 @@ namespace ILSpy.Cli
 
 			foreach (var asm in asmsToDecompile)
 			{
+				var dir = Path.Combine(Configuration_OutputFolder, Path.GetFileNameWithoutExtension(asm.FileName));
 				
-				decompOptions.SaveAsProjectDirectory = Path.Combine(Configuration_OutputFolder, Path.GetFileNameWithoutExtension(asm.FileName));
+				if (Configuration_CleanDirectory && Directory.Exists(dir))
+				{
+					Directory.Delete(dir, true);
+				}
+
+				Directory.CreateDirectory(dir);
+				decompOptions.SaveAsProjectDirectory = dir;
+
 				var sw = new PlainTextOutput();
 				lang.DecompileAssembly(asm, sw, decompOptions);
 				File.WriteAllText(Path.Combine(decompOptions.SaveAsProjectDirectory, Path.GetFileNameWithoutExtension(asm.FileName) + ".csproj"), sw.ToString(), Encoding.UTF8);

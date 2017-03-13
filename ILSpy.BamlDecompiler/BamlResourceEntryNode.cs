@@ -20,10 +20,11 @@ namespace ILSpy.BamlDecompiler
 {
 	public sealed class BamlResourceEntryNode : ResourceEntryNode
 	{
-		public BamlResourceEntryNode(string key, Stream data) : base(key, data)
+		public BamlResourceEntryNode(string key, Stream data, Type type) : base(key, data, type)
 		{
 		}
-		
+
+#if !CLI
 		public override bool View(DecompilerTextView textView)
 		{
 			IHighlightingDefinition highlighting = null;
@@ -53,7 +54,7 @@ namespace ILSpy.BamlDecompiler
 			output.Write(xamlDocument.ToString());
 			return true;
 		}
-
+#endif
 		internal static XDocument LoadIntoDocument(IAssemblyResolver resolver, AssemblyDefinition asm, Stream stream)
 		{
 			XDocument xamlDocument;

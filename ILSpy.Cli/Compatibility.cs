@@ -8,6 +8,9 @@ using System.Windows.Threading;
 using ICSharpCode.ILSpy;
 using System.Collections.ObjectModel;
 using System.IO;
+using ILSpy.BamlDecompiler;
+using System.ComponentModel.Composition;
+using ICSharpCode.ILSpy.TreeNodes;
 
 namespace System.Windows.Threading
 {
@@ -70,18 +73,55 @@ namespace App
 	}
 	internal class CompositionContainer
 	{
+		private static List<IResourceFileHandler> resourceFileHandlers = typeof(CompositionContainer).Assembly.GetTypes().Where(x => typeof(IResourceFileHandler).IsAssignableFrom(x) && x.CustomAttributes.Any(y => y.AttributeType == typeof(ExportAttribute))).Select(x => (IResourceFileHandler)Activator.CreateInstance(x)).ToList();
+		private static List<IResourceNodeFactory> resourceNodeFactories = typeof(CompositionContainer).Assembly.GetTypes().Where(x => typeof(IResourceNodeFactory).IsAssignableFrom(x) && x.CustomAttributes.Any(y => y.AttributeType == typeof(ExportAttribute))).Select(x => (IResourceNodeFactory)Activator.CreateInstance(x)).ToList();
 		internal static IEnumerable<T> GetExportedValues<T>()
 		{
 			if (typeof(T) == typeof(IResourceFileHandler))
 			{
 
-				// BamlDecompiler is in an assembly that references the full ILSpy GUI. Ignore BAML.
-				// return new[] { (T)(object)new BamlResourceFileHandler()  }; 
-				return Enumerable.Empty<T>();
+				return (IEnumerable<T>)resourceFileHandlers;
+			}
+			else if(typeof(T) == typeof(IResourceNodeFactory))
+			{
+				return (IEnumerable<T>)resourceNodeFactories;
 			}
 			throw new NotSupportedException();
 		}
 	}
+}
+namespace ICSharpCode
+{
+	public abstract class ILSpyTreeNode
+	{
+		public abstract void Decompile(Language language, ITextOutput output, DecompilationOptions options);
+		public bool LazyLoading;
+		private bool _loaded;
+
+		protected virtual void LoadChildren()
+		{
+		}
+
+		public void EnsureLazyChildren()
+		{
+			if (!_loaded)
+			{
+				LoadChildren();
+				_loaded = true;
+			}
+		}
+		public List<ILSpyTreeNode> Children = new List<ILSpyTreeNode>();
+
+	}
+}
+namespace ICSharpCode.AvalonEdit.Highlighting
+{
+}
+namespace ICSharpCode.AvalonEdit.Utils
+{
+}
+namespace ICSharpCode.ILSpy.Controls
+{
 }
 
 namespace App.Current

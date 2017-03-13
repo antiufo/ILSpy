@@ -31,7 +31,12 @@ namespace ICSharpCode.ILSpy.TreeNodes
 	{
 		private readonly string key;
 		private readonly Stream data;
+		private readonly Type type;
 
+		public string Key { get { return key; } }
+		public Type Type { get { return type; } }
+
+#if !CLI
 		public override object Text
 		{
 			get { return this.key; }
@@ -41,14 +46,14 @@ namespace ICSharpCode.ILSpy.TreeNodes
 		{
 			get { return Images.Resource; }
 		}
-
-		protected Stream Data
+#endif
+		public Stream Data
 		{
 			get { return data; }
 		}
 
 
-		public ResourceEntryNode(string key, Stream data)
+		public ResourceEntryNode(string key, Stream data, Type type)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
@@ -56,6 +61,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 				throw new ArgumentNullException("data");
 			this.key = key;
 			this.data = data;
+			this.type = type;
 		}
 
 		public static ILSpyTreeNode Create(string key, object data)
@@ -68,7 +74,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			}
 			var streamData = data as Stream;
 			if(streamData !=null)
-				result =  new ResourceEntryNode(key, data as Stream);
+				result =  new ResourceEntryNode(key, streamData, streamData.GetType());
 
 			return result;
 		}
@@ -78,6 +84,7 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			language.WriteCommentLine(output, string.Format("{0} = {1}", key, data));
 		}
 
+#if !CLI
 		public override bool Save(DecompilerTextView textView)
 		{
 			SaveFileDialog dlg = new SaveFileDialog();
@@ -90,5 +97,6 @@ namespace ICSharpCode.ILSpy.TreeNodes
 			}
 			return true;
 		}
+#endif
 	}
 }

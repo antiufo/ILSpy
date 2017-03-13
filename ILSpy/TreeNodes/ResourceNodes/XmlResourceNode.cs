@@ -48,7 +48,7 @@ namespace ICSharpCode.ILSpy.Xaml
 			foreach (string fileExt in xmlFileExtensions)
 			{
 				if (key.EndsWith(fileExt, StringComparison.OrdinalIgnoreCase))
-					return new XmlResourceEntryNode(key, (Stream)data);
+					return new XmlResourceEntryNode(key, (Stream)data, data.GetType());
 			}
 			return null;
 		}
@@ -58,11 +58,11 @@ namespace ICSharpCode.ILSpy.Xaml
 	{
 		string xml;
 		
-		public XmlResourceEntryNode(string key, Stream data)
-			: base(key, data)
+		public XmlResourceEntryNode(string key, Stream data, Type type)
+			: base(key, data, type)
 		{
 		}
-		
+#if !CLI
 		public override object Icon
 		{
 			get
@@ -105,5 +105,6 @@ namespace ICSharpCode.ILSpy.Xaml
 			).Then(t => textView.ShowNode(t, this, highlighting)).HandleExceptions();
 			return true;
 		}
+#endif
 	}
 }
