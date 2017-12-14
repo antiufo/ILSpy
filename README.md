@@ -4,10 +4,27 @@ ILSpy is the open-source .NET assembly browser and decompiler.
 
 Download: [latest release](https://github.com/icsharpcode/ILSpy/releases) | [latest CI build (master)](https://ci.appveyor.com/api/projects/icsharpcode/ilspy/artifacts/ILSpy_binaries.zip?branch=master&job=Configuration%3A+Release)
 
-Note: Only the CI builds support .NET Standard/Core assemblies. However, those builds are not yet at feature parity with the 
-released bits, see [C# language support status](https://github.com/icsharpcode/ILSpy/issues/829) for details.
+Decompiler Frontends
+-------
 
-Looking for a (Linux/Mac/Windows) command line client (or a sample for the [ICSharpCode.Decompiler](https://www.nuget.org/packages/ICSharpCode.Decompiler/) Nuget)? Check out [ICSharpCode.Decompiler.Console](ICSharpCode.Decompiler.Console)!
+Aside from the WPF UI ILSpy (downloadable via Releases, see also [plugins](https://github.com/icsharpcode/ILSpy/wiki/Plugins)), the following other frontends are available:
+
+* Linux/Mac/Windows command line client - check out [ICSharpCode.Decompiler.Console](ICSharpCode.Decompiler.Console) in this repository
+* Linux/Mac/Windows [PowerShell cmdlets](ICSharpCode.Decompiler.PowerShell) in this repository
+* Visual Studio Code Extension [repository](https://github.com/icsharpcode/ilspy-vscode) | [marketplace](https://marketplace.visualstudio.com/items?itemName=icsharpcode.ilspy-vscode)
+* [ICSharpCode.Decompiler](https://www.nuget.org/packages/ICSharpCode.Decompiler/) NuGet for your own projects
+
+Features
+-------
+
+ * Decompilation to C#
+ * Whole-project decompilation (csproj, not sln!)
+ * Search for types/methods/properties (substring)
+ * Hyperlink-based type/method/property navigation
+ * Base/Derived types navigation, history
+ * BAML to XAML decompiler
+ * Extensible via [plugins](https://github.com/icsharpcode/ILSpy/wiki/Plugins) (MEF)
+ * Check out the [language support status](https://github.com/icsharpcode/ILSpy/issues/829)
 
 License
 -------

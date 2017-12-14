@@ -288,8 +288,8 @@ namespace ICSharpCode.ILSpy
 
 		void AddReferenceWarningMessage(AssemblyDefinition assembly, ITextOutput output)
 		{
-			var loadedAssembly = MainWindow.Instance.CurrentAssemblyList.GetAssemblies().FirstOrDefault(la => la.GetAssemblyDefinitionAsync().Result == assembly);
-			if (loadedAssembly == null || !loadedAssembly.LoadedAssemblyReferencesInfo.Any(i => i.Value.HasErrors))
+			var loadedAssembly = MainWindow.Instance.CurrentAssemblyList.GetAssemblies().FirstOrDefault(la => la.GetAssemblyDefinitionOrNull() == assembly);
+			if (loadedAssembly == null || !loadedAssembly.LoadedAssemblyReferencesInfo.HasErrors)
 				return;
 			const string line1 = "Warning: Some assembly references could not be loaded. This might lead to incorrect decompilation of some parts,";
 			const string line2 = "for ex. property getter/setter access. To get optimal decompilation results, please manually add the references to the list of loaded assemblies.";
@@ -325,7 +325,6 @@ namespace ICSharpCode.ILSpy
 			var module = assembly.GetModuleDefinitionAsync().Result;
 			if (options.FullDecompilation && options.SaveAsProjectDirectory != null) {
 				var decompiler = new ILSpyWholeProjectDecompiler(assembly, options);
-				decompiler.ProjectGuid = App.CommandLineArguments.FixedGuid;
 				decompiler.DecompileProject(module, options.SaveAsProjectDirectory, new TextOutputWriter(output), options.CancellationToken);
 			} else {
 				AddReferenceWarningMessage(module.Assembly, output);

@@ -256,15 +256,7 @@ namespace ICSharpCode.ILSpy
 		
 		void HandleCommandLineArgumentsAfterShowList(CommandLineArguments args)
 		{
-			// if a SaveDirectory is given, do not start a second concurrent decompilation
-			// by executing JumpoToReference (leads to https://github.com/icsharpcode/ILSpy/issues/710)
-			if (!string.IsNullOrEmpty(args.SaveDirectory)) {
-				foreach (var x in commandLineLoadedAssemblies) {
-					x.ContinueWhenLoaded((Task<ModuleDefinition> moduleTask) => {
-						OnExportAssembly(moduleTask, args.SaveDirectory);
-					}, TaskScheduler.FromCurrentSynchronizationContext());
-				}
-			} else if (args.NavigateTo != null) {
+			if (args.NavigateTo != null) {
 				bool found = false;
 				if (args.NavigateTo.StartsWith("N:", StringComparison.Ordinal)) {
 					string namespaceName = args.NavigateTo.Substring(2);
@@ -309,23 +301,6 @@ namespace ICSharpCode.ILSpy
 			}
 			commandLineLoadedAssemblies.Clear(); // clear references once we don't need them anymore
 		}
-		
-		void OnExportAssembly(Task<ModuleDefinition> moduleTask, string path)
-		{
-			AssemblyTreeNode asmNode = assemblyListTreeNode.FindAssemblyNode(moduleTask.Result);
-			if (asmNode != null) {
-				string file = DecompilerTextView.CleanUpName(asmNode.LoadedAssembly.ShortName);
-				Language language = sessionSettings.FilterSettings.Language;
-				DecompilationOptions options = new DecompilationOptions();
-				options.FullDecompilation = true;
-				options.SaveAsProjectDirectory = Path.Combine(App.CommandLineArguments.SaveDirectory, file);
-				if (!Directory.Exists(options.SaveAsProjectDirectory)) {
-					Directory.CreateDirectory(options.SaveAsProjectDirectory);
-				}
-				string fullFile = Path.Combine(options.SaveAsProjectDirectory, file + language.ProjectFileExtension);
-				TextView.SaveToDisk(language, new[] { asmNode }, options, fullFile);
-			}
-		}
 
 		void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
@@ -345,6 +320,10 @@ namespace ICSharpCode.ILSpy
 
 			ShowAssemblyList(this.assemblyList);
 
+			if (sessionSettings.ActiveAutoLoadedAssembly != null) {
+				this.assemblyList.Open(sessionSettings.ActiveAutoLoadedAssembly, true);
+			}
+
 			Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() => OpenAssemblies(spySettings)));
 		}
 
@@ -356,7 +335,6 @@ namespace ICSharpCode.ILSpy
 				if (sessionSettings.ActiveTreeViewPath != null) {
 					node = FindNodeByPath(sessionSettings.ActiveTreeViewPath, true);
 					if (node == this.assemblyListTreeNode && sessionSettings.ActiveAutoLoadedAssembly != null) {
-						this.assemblyList.Open(sessionSettings.ActiveAutoLoadedAssembly, true);
 						node = FindNodeByPath(sessionSettings.ActiveTreeViewPath, true);
 					}
 				}
