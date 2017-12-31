@@ -202,7 +202,6 @@ namespace ICSharpCode.ILSpy
 				this.searchTerm = searchTerm.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 				this.language = language;
 				this.searchMode = searchMode;
-				
 				this.Results.Add(new SearchResult { Name = "Searching..." });
 			}
 			
@@ -237,6 +236,7 @@ namespace ICSharpCode.ILSpy
 			
 			void AddResult(SearchResult result)
 			{
+				if (Decompiler.CSharp.CSharpDecompiler.MemberIsHidden(result.Member, Options.DecompilerSettingsPanel.CurrentDecompilerSettings)) return;
 				if (++resultCount == 1000) {
 					result = new SearchResult { Name = "Search aborted, more than 1000 results found." };
 					cts.Cancel();

@@ -206,6 +206,17 @@ namespace ICSharpCode.Decompiler.CSharp
 					return true;
 			}
 
+			if (settings.AnonymousMethods) 
+			{
+				var t = member;
+				while (t != null) 
+				{
+					if (t.HasGeneratedName()) return true;
+					t = t.DeclaringType;
+				}
+				
+			}
+
 			TypeDefinition type = member as TypeDefinition;
 			if (type != null) {
 				if (type.DeclaringType != null) {
