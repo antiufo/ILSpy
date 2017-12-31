@@ -158,11 +158,23 @@ namespace ICSharpCode.ILSpy
 
 		public virtual void Search(TypeDefinition type, Language language, Action<SearchResult> addResult)
 		{
-			Add(type.Fields, type, language, addResult, IsMatch, FieldTreeNode.GetIcon);
-			Add(type.Properties, type, language, addResult, IsMatch, p => PropertyTreeNode.GetIcon(p));
-			Add(type.Events, type, language, addResult, IsMatch, EventTreeNode.GetIcon);
-			Add(type.Methods.Where(NotSpecialMethod), type, language, addResult, IsMatch, MethodTreeNode.GetIcon);
+			try {
+				Add(type.Fields, type, language, addResult, IsMatch, FieldTreeNode.GetIcon);
+			} catch (Exception) {
+			}
 
+			try {
+				Add(type.Properties, type, language, addResult, IsMatch, p => PropertyTreeNode.GetIcon(p));
+			} catch (Exception) {
+			}
+			try {
+				Add(type.Events, type, language, addResult, IsMatch, EventTreeNode.GetIcon);
+			} catch (Exception) {
+			}
+			try {
+					Add(type.Methods.Where(NotSpecialMethod), type, language, addResult, IsMatch, MethodTreeNode.GetIcon);
+			} catch (Exception) {
+			}
 			foreach (TypeDefinition nestedType in type.NestedTypes) {
 				Search(nestedType, language, addResult);
 			}
